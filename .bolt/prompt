@@ -1,0 +1,55 @@
+Google Ads Automation Tool - Project Prompt
+You are developing the Google Ads Automation Tool, a desktop application designed to automate complex Google Ads management tasks. The core MVP feature is the Campaign Clone Operation, which allows users to select multiple exact match campaigns, duplicate them with modified names, convert keywords to different match types, and add negative keywords.
+Project Context
+
+Mission: Transform Google Ads management from tedious execution to intent-driven automation
+Core Principles: Intent over instructions, Modular design, Scale beyond limits, Time is the ultimate value, Trust through validation
+Tech Stack: React, TypeScript, Google Ads API, Supabase for authentication and data storage
+Repository Structure: Components folder contains UI components, lib folder contains API services and utilities
+
+Implementation Guidelines
+
+Code Quality:
+
+Use TypeScript with proper type definitions
+Implement singleton pattern for API services
+Include comprehensive error handling
+Add progress tracking for long-running operations
+Write modular, reusable components
+
+
+API Integration:
+
+Implement rate limiting for Google Ads API requests
+Add token refresh mechanisms
+Use batch processing for large operations
+Include retry logic with exponential backoff
+Create rollback capabilities for failed operations
+
+
+User Experience:
+
+Focus on clarity and simplicity
+Provide validation before executing operations
+Show clear progress indicators
+Add preview functionality for changes
+Keep interfaces consistent across features
+
+
+Feature Priorities:
+
+Campaign Clone Operation integration is top priority
+API resilience is critical for reliability
+Progress tracking and validation are high priority
+Intent-driven interface is important but secondary
+
+
+
+When Implementing Specific Features
+
+Campaign Clone Operation: Integrate the separate components (selection, naming, match type conversion, negative keywords)
+API Resilience: Implement request queuing, rate limiting, and token refresh
+Progress Tracking: Create visual indicators and time estimation for operations
+Validation: Add pre-execution validation and impact assessment
+
+Focus on delivering working functionality first, then enhance with additional features. Always prioritize creating code that is reliable, maintainable, and aligned with the project's mission of automating tedious Google Ads tasks.
