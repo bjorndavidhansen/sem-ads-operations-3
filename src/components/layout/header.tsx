@@ -1,4 +1,4 @@
-import { Copy, Settings, LogOut, Building2, Layers, Clock, FileText, Calendar, BarChart2, BarChart as ChartBar } from 'lucide-react';
+import { Copy, Settings, LogOut, Building2, Layers, Clock, FileText, Calendar, BarChart2, BarChart as ChartBar, History } from 'lucide-react';
 import { Session } from '@supabase/supabase-js';
 import { Link } from 'react-router-dom';
 import { Button } from '../ui/button';
@@ -63,6 +63,12 @@ export function Header({ session }: HeaderProps) {
             <Button variant="outline" size="sm">
               <BarChart2 className="mr-2 h-4 w-4" />
               Reports
+            </Button>
+          </Link>
+          <Link to="/operations">
+            <Button variant="outline" size="sm">
+              <History className="mr-2 h-4 w-4" />
+              Operations
             </Button>
           </Link>
           <Button variant="outline" size="sm">

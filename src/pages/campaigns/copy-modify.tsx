@@ -1,39 +1,245 @@
-import { useState } from 'react';
-import { Copy, AlertCircle } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/router';
+import { googleAdsApi } from '../../lib/google-ads-api';
+import { useOperationTracking } from '../../hooks/use-operation-tracking';
+import { useValidationPreview } from '../../hooks/use-validation-preview';
+import { ChangePreview } from '../../components/operations/change-preview';
+import { toast } from 'react-hot-toast';
+import { Copy, AlertCircle, ArrowRight } from 'lucide-react';
 import { Button } from '../../components/ui/button';
 import { AccountSelector } from '../../components/google-ads/account-selector';
-import { CampaignForm } from '../../components/campaign/campaign-form';
-import { BiddingStrategy } from '../../components/campaign/bidding/bidding-strategy';
+import { CampaignList } from '../../components/campaign/campaign-list';
 import { NamingConvention } from '../../components/campaign/naming/naming-convention';
-import { googleAdsApi } from '../../lib/google-ads-api';
-import type { Campaign } from '../../lib/google-ads-api';
+import { MatchTypeConverter } from '../../components/campaign/match-type/match-type-conversion';
+import { OperationProgressBar } from '../../components/ui/operation-progress';
+import { googleAdsApi, Campaign } from '../../lib/google-ads-api';
+import { useToast } from '../../components/ui/toast';
+
+interface CopyConfig {
+  namingPattern: string;
+  targetMatchType: 'BROAD' | 'PHRASE';
+  addNegatives: boolean;
+}
+
+interface CopySettings {
+  name: string;
+  matchType: 'BROAD' | 'PHRASE';
+  createNegativeExactKeywords: boolean;
+}
 
 export function CampaignCopyPage() {
   const [selectedAccountId, setSelectedAccountId] = useState<string>();
   const [selectedCampaigns, setSelectedCampaigns] = useState<Campaign[]>([]);
+  const [copyConfig, setCopyConfig] = useState<CopyConfig>({
+    namingPattern: '',
+    targetMatchType: 'BROAD',
+    addNegatives: true
+  });
+  const [currentStep, setCurrentStep] = useState<'select' | 'configure' | 'preview' | 'processing'>('select');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [showForm, setShowForm] = useState(false);
+  const [currentOperationId, setCurrentOperationId] = useState<string | null>(null);
+  const { operation } = useOperationTracking(currentOperationId || undefined);
+  const { showToast } = useToast();
+  const { 
+    isPreviewVisible, 
+    items, 
+    summary, 
+    isLoading: isPreviewLoading,
+    error: previewError,
+    generateCampaignClonePreview, 
+    executeCampaignClone, 
+    closePreview 
+  } = useValidationPreview({
+    customerId: selectedAccountId,
+    onComplete: (operationId) => {
+      showToast({
+        title: 'Success',
+        description: `Successfully copied ${selectedCampaigns.length} campaigns`,
+        type: 'success'
+      });
+      
+      // Reset state
+      setSelectedCampaigns([]);
+      setCurrentStep('select');
+      setLoading(false);
+      
+      // Clear operation ID after a delay to allow viewing the completed status
+      setTimeout(() => setCurrentOperationId(null), 3000);
+    },
+    onError: (error) => {
+      setError(error.message || 'Failed to copy campaigns');
+      setLoading(false);
+      
+      showToast({
+        title: 'Error',
+        description: error.message || 'Failed to copy campaigns. Please try again.',
+        type: 'error'
+      });
+    }
+  });
+
+  // Monitor operation progress and update UI accordingly
+  useEffect(() => {
+    if (operation && currentStep === 'processing') {
+      if (operation.status === 'completed') {
+        showToast({
+          title: 'Success',
+          description: `Successfully copied ${selectedCampaigns.length} campaigns`,
+          type: 'success'
+        });
+        
+        // Reset state
+        setSelectedCampaigns([]);
+        setCurrentStep('select');
+        setLoading(false);
+        
+        // Clear operation ID after a delay to allow viewing the completed status
+        setTimeout(() => setCurrentOperationId(null), 3000);
+      } else if (operation.status === 'failed') {
+        setError(operation.error?.message || 'Failed to copy campaigns');
+        setLoading(false);
+        
+        showToast({
+          title: 'Error',
+          description: operation.error?.message || 'Failed to copy campaigns. Please try again.',
+          type: 'error'
+        });
+      }
+    }
+  }, [operation, currentStep, selectedCampaigns.length, showToast]);
+
+  const validateSelection = () => {
+    if (selectedCampaigns.length === 0) {
+      showToast({
+        title: 'Selection Required',
+        description: 'Please select at least one campaign to copy.',
+        type: 'error'
+      });
+      return false;
+    }
+
+    const nonExactMatch = selectedCampaigns.find(c => c.matchType !== 'EXACT');
+    if (nonExactMatch) {
+      showToast({
+        title: 'Invalid Selection',
+        description: 'Only exact match campaigns can be selected for conversion.',
+        type: 'error'
+      });
+      return false;
+    }
+
+    return true;
+  };
+
+  const handleContinueToConfig = () => {
+    if (validateSelection()) {
+      setCurrentStep('configure');
+    }
+  };
+
+  const handleContinueToPreview = () => {
+    if (!copyConfig.namingPattern) {
+      showToast({
+        title: 'Configuration Required',
+        description: 'Please specify a naming pattern for the new campaigns.',
+        type: 'error'
+      });
+      return;
+    }
+    setCurrentStep('preview');
+  };
 
   const handleCopyCampaigns = async () => {
-    if (!selectedAccountId || selectedCampaigns.length === 0) return;
+    if (!selectedAccountId || selectedCampaigns.length === 0) {
+      showToast({
+        title: 'Error',
+        description: 'No campaigns selected to copy',
+        type: 'error'
+      });
+      return;
+    }
 
     try {
       setLoading(true);
       setError(null);
-
-      await googleAdsApi.copyCampaigns(
-        selectedAccountId,
-        selectedCampaigns.map(c => c.id)
-      );
-
-      setSelectedCampaigns([]);
-      setShowForm(false);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to copy campaigns');
-      console.error('Error copying campaigns:', err);
-    } finally {
+      
+      // Instead of directly copying, trigger the preview process
+      await handlePreviewClick();
+      
+    } catch (error) {
+      setError(error.message || 'Failed to copy campaigns');
       setLoading(false);
+      
+      showToast({
+        title: 'Error',
+        description: error.message || 'Failed to copy campaigns. Please try again.',
+        type: 'error'
+      });
+    }
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value, type } = e.target;
+    
+    setCopyConfig(prev => ({
+      ...prev,
+      [name]: type === 'checkbox' 
+        ? (e.target as HTMLInputElement).checked 
+        : value
+    }));
+  };
+
+  const handlePreviewClick = async () => {
+    try {
+      if (!selectedAccountId || selectedCampaigns.length === 0) return;
+      
+      await generateCampaignClonePreview(
+        selectedCampaigns.map(campaign => campaign.id),
+        {
+          name: copyConfig.namingPattern,
+          matchType: copyConfig.targetMatchType,
+          createNegativeExactKeywords: copyConfig.addNegatives
+        }
+      );
+    } catch (error) {
+      console.error('Error generating preview:', error);
+      showToast({
+        title: 'Error',
+        description: `Error: ${error.message}`,
+        type: 'error'
+      });
+    }
+  };
+
+  const handleExecuteClick = async () => {
+    try {
+      if (!selectedAccountId || selectedCampaigns.length === 0) return;
+      
+      setLoading(true);
+      
+      await executeCampaignClone(
+        selectedCampaigns.map(campaign => campaign.id),
+        {
+          name: copyConfig.namingPattern,
+          matchType: copyConfig.targetMatchType,
+          createNegativeExactKeywords: copyConfig.addNegatives
+        }
+      );
+      
+      // Reset selection and move to next step
+      setCurrentStep('complete');
+      
+    } catch (error) {
+      console.error('Error copying campaign:', error);
+      setError(error.message || 'Failed to copy campaigns');
+      setLoading(false);
+      
+      showToast({
+        title: 'Error',
+        description: `Error: ${error.message}`,
+        type: 'error'
+      });
     }
   };
 
@@ -42,6 +248,16 @@ export function CampaignCopyPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-2xl font-semibold text-gray-900">Copy & Modify Campaigns</h1>
+          
+          {currentStep !== 'select' && (
+            <Button
+              variant="ghost"
+              onClick={() => setCurrentStep('select')}
+              disabled={loading}
+            >
+              Back to Selection
+            </Button>
+          )}
         </div>
 
         {error && (
@@ -67,83 +283,135 @@ export function CampaignCopyPage() {
             />
           </div>
 
-          {selectedAccountId && !showForm && (
+          {selectedAccountId && currentStep === 'select' && (
             <div>
               <div className="flex justify-between items-center mb-4">
                 <h2 className="text-lg font-medium text-gray-900">Select Campaigns to Copy</h2>
                 <Button
-                  onClick={() => setShowForm(true)}
+                  onClick={handleContinueToConfig}
                   disabled={selectedCampaigns.length === 0 || loading}
                 >
-                  <Copy className="h-4 w-4 mr-2" />
-                  {loading ? 'Copying...' : 'Copy Selected'}
+                  Continue to Configuration
+                  <ArrowRight className="h-4 w-4 ml-2" />
                 </Button>
               </div>
 
-              <div className="bg-white shadow overflow-hidden rounded-md">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
-                    <tr>
-                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Campaign
-                      </th>
-                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Status
-                      </th>
-                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Type
-                      </th>
-                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Budget
-                      </th>
-                      <th scope="col" className="relative px-6 py-3">
-                        <span className="sr-only">Select</span>
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {selectedCampaigns.map((campaign) => (
-                      <tr key={campaign.id}>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                          {campaign.name}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          {campaign.status}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          {campaign.advertisingChannelType}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          ${parseInt(campaign.budget.amountMicros) / 1_000_000}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                          <button
-                            onClick={() => setSelectedCampaigns(campaigns => 
-                              campaigns.filter(c => c.id !== campaign.id)
-                            )}
-                            className="text-red-600 hover:text-red-900"
-                          >
-                            Remove
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+              <CampaignList
+                customerId={selectedAccountId}
+                onSelectionChange={setSelectedCampaigns}
+                exactMatchOnly={true}
+              />
+            </div>
+          )}
+
+          {currentStep === 'configure' && (
+            <div className="space-y-8 bg-white shadow rounded-lg p-6">
+              <div>
+                <h3 className="text-lg font-medium mb-4">Campaign Configuration</h3>
+                
+                <div className="space-y-6">
+                  <NamingConvention
+                    value={copyConfig.namingPattern}
+                    onChange={(pattern) => setCopyConfig(prev => ({ ...prev, namingPattern: pattern }))}
+                  />
+
+                  <MatchTypeConverter
+                    value={copyConfig.targetMatchType}
+                    onChange={(type) => setCopyConfig(prev => ({ ...prev, targetMatchType: type }))}
+                  />
+
+                  <div>
+                    <label className="flex items-center space-x-2">
+                      <input
+                        type="checkbox"
+                        checked={copyConfig.addNegatives}
+                        onChange={(e) => setCopyConfig(prev => ({ ...prev, addNegatives: e.target.checked }))}
+                        className="form-checkbox"
+                      />
+                      <span>Add exact match keywords as negatives to new campaigns</span>
+                    </label>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex justify-end">
+                <Button
+                  onClick={handleContinueToPreview}
+                  disabled={!copyConfig.namingPattern}
+                >
+                  Continue to Preview
+                  <ArrowRight className="h-4 w-4 ml-2" />
+                </Button>
               </div>
             </div>
           )}
 
-          {selectedAccountId && showForm && (
-            <div className="bg-white shadow overflow-hidden rounded-lg">
-              <div className="px-4 py-5 sm:p-6">
-                <CampaignForm
-                  accountId={selectedAccountId}
-                  onSubmit={handleCopyCampaigns}
-                  onCancel={() => setShowForm(false)}
-                  isLoading={loading}
-                />
+          {currentStep === 'preview' && (
+            <div className="space-y-8 bg-white shadow rounded-lg p-6">
+              <div>
+                <h3 className="text-lg font-medium mb-4">Operation Preview</h3>
+                
+                <div className="space-y-4">
+                  <div>
+                    <h4 className="font-medium">Selected Campaigns ({selectedCampaigns.length})</h4>
+                    <ul className="mt-2 space-y-2">
+                      {selectedCampaigns.map(campaign => (
+                        <li key={campaign.id} className="flex items-center space-x-2">
+                          <span>{campaign.name}</span>
+                          <ArrowRight className="h-4 w-4" />
+                          <span>{copyConfig.namingPattern.replace('{original}', campaign.name)}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+
+                  <div>
+                    <h4 className="font-medium">Configuration</h4>
+                    <ul className="mt-2 space-y-1">
+                      <li>Target Match Type: {copyConfig.targetMatchType}</li>
+                      <li>Add Negative Keywords: {copyConfig.addNegatives ? 'Yes' : 'No'}</li>
+                    </ul>
+                  </div>
+                </div>
               </div>
+
+              <div className="flex justify-end">
+                <Button
+                  onClick={handleCopyCampaigns}
+                  disabled={loading}
+                >
+                  {loading ? 'Processing...' : 'Start Copy Operation'}
+                  {!loading && <Copy className="h-4 w-4 ml-2" />}
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {currentStep === 'processing' && (
+            <div className="bg-white shadow rounded-lg p-6">
+              {currentOperationId ? (
+                <OperationProgressBar 
+                  operationId={currentOperationId}
+                  showDetails={true}
+                  className="w-full"
+                />
+              ) : (
+                <div className="text-center p-4">
+                  <p>Initializing operation...</p>
+                </div>
+              )}
+            </div>
+          )}
+
+          {isPreviewVisible && summary && (
+            <div className="mb-8">
+              <ChangePreview
+                items={items}
+                summary={summary}
+                onConfirm={handleExecuteClick}
+                onCancel={closePreview}
+                loading={isPreviewLoading}
+              />
             </div>
           )}
         </div>
