@@ -8,13 +8,16 @@ import { ForgotPasswordPage } from './pages/auth/forgot-password';
 import { GoogleAdsAccountsPage } from './pages/google-ads/accounts';
 import { CampaignCopyPage } from './pages/campaigns/copy-modify';
 import { CampaignComparePage } from './pages/campaigns/compare';
+import CampaignCloneWizardPage from './pages/campaigns/clone-wizard';
 import { SharedBudgetsPage } from './pages/shared-budgets';
 import { TasksPage } from './pages/tasks';
 import { TaskTemplatesPage } from './pages/tasks/templates';
 import { TaskSchedulesPage } from './pages/tasks/schedules';
 import { ReportsPage } from './pages/reports';
-import { Header } from './components/layout/header';
+import { OperationDashboardPage } from './pages/operations/operation-dashboard';
+import { AppContainer } from './components/layout/app-container';
 import { CampaignList } from './components/campaign/campaign-list';
+import ApiResilienceTest from './components/test/api-resilience-test';
 
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID;
 
@@ -31,12 +34,9 @@ function App() {
               path="/"
               element={
                 <ProtectedRoute>
-                  <div className="min-h-screen bg-gray-50">
-                    <Header />
-                    <main className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
-                      <CampaignList />
-                    </main>
-                  </div>
+                  <AppContainer>
+                    <CampaignList />
+                  </AppContainer>
                 </ProtectedRoute>
               }
             />
@@ -44,10 +44,9 @@ function App() {
               path="/google-ads-accounts"
               element={
                 <ProtectedRoute>
-                  <div className="min-h-screen bg-gray-50">
-                    <Header />
+                  <AppContainer>
                     <GoogleAdsAccountsPage />
-                  </div>
+                  </AppContainer>
                 </ProtectedRoute>
               }
             />
@@ -55,10 +54,9 @@ function App() {
               path="/campaigns/copy-modify"
               element={
                 <ProtectedRoute>
-                  <div className="min-h-screen bg-gray-50">
-                    <Header />
+                  <AppContainer>
                     <CampaignCopyPage />
-                  </div>
+                  </AppContainer>
                 </ProtectedRoute>
               }
             />
@@ -66,10 +64,19 @@ function App() {
               path="/campaigns/compare"
               element={
                 <ProtectedRoute>
-                  <div className="min-h-screen bg-gray-50">
-                    <Header />
+                  <AppContainer>
                     <CampaignComparePage />
-                  </div>
+                  </AppContainer>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/campaigns/clone-wizard"
+              element={
+                <ProtectedRoute>
+                  <AppContainer>
+                    <CampaignCloneWizardPage />
+                  </AppContainer>
                 </ProtectedRoute>
               }
             />
@@ -77,10 +84,9 @@ function App() {
               path="/shared-budgets/:accountId"
               element={
                 <ProtectedRoute>
-                  <div className="min-h-screen bg-gray-50">
-                    <Header />
+                  <AppContainer>
                     <SharedBudgetsPage />
-                  </div>
+                  </AppContainer>
                 </ProtectedRoute>
               }
             />
@@ -88,10 +94,9 @@ function App() {
               path="/tasks"
               element={
                 <ProtectedRoute>
-                  <div className="min-h-screen bg-gray-50">
-                    <Header />
+                  <AppContainer>
                     <TasksPage />
-                  </div>
+                  </AppContainer>
                 </ProtectedRoute>
               }
             />
@@ -99,10 +104,9 @@ function App() {
               path="/tasks/templates"
               element={
                 <ProtectedRoute>
-                  <div className="min-h-screen bg-gray-50">
-                    <Header />
+                  <AppContainer>
                     <TaskTemplatesPage />
-                  </div>
+                  </AppContainer>
                 </ProtectedRoute>
               }
             />
@@ -110,10 +114,9 @@ function App() {
               path="/tasks/schedules"
               element={
                 <ProtectedRoute>
-                  <div className="min-h-screen bg-gray-50">
-                    <Header />
+                  <AppContainer>
                     <TaskSchedulesPage />
-                  </div>
+                  </AppContainer>
                 </ProtectedRoute>
               }
             />
@@ -121,10 +124,29 @@ function App() {
               path="/reports"
               element={
                 <ProtectedRoute>
-                  <div className="min-h-screen bg-gray-50">
-                    <Header />
+                  <AppContainer>
                     <ReportsPage />
-                  </div>
+                  </AppContainer>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/operations"
+              element={
+                <ProtectedRoute>
+                  <AppContainer>
+                    <OperationDashboardPage />
+                  </AppContainer>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/test/api-resilience"
+              element={
+                <ProtectedRoute>
+                  <AppContainer>
+                    <ApiResilienceTest />
+                  </AppContainer>
                 </ProtectedRoute>
               }
             />

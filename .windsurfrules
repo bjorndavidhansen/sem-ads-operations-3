@@ -1,0 +1,118 @@
+\# Google Ads Automation Tool \- Project Rules
+
+\<mission\_statement\>  
+Our mission is to transform Google Ads management from tedious execution to intent-driven automation, saving advertisers significant time through modular operations that understand what they want to accomplish, not just what buttons to press.
+
+Core principles:  
+\- Intent Over Instructions: Focus on advertiser goals, not technical steps  
+\- Modular by Design: Create discrete, reusable components  
+\- Scale Beyond Limits: Enable operations at volumes impossible manually  
+\- Time is the Ultimate Value: Optimize for significant time savings  
+\- Trust Through Validation: Build confidence through previews, validation, and rollback  
+\</mission\_statement\>
+
+\<code\_architecture\>  
+\- Use TypeScript throughout with proper interfaces and type definitions  
+\- Create React functional components with hooks (no class components)  
+\- Implement singleton pattern for API and service classes  
+\- Ensure clean separation of concerns between components  
+\- Follow DRY principles while maintaining readability  
+\- Use proper error boundaries for component error handling  
+\- Implement custom hooks for shared logic across components  
+\- Keep state management close to components that need it  
+\</code\_architecture\>
+
+\<coding\_patterns\>  
+\- Use async/await for asynchronous operations instead of raw promises  
+\- Implement proper error handling with try/catch blocks  
+\- Create user-friendly error messages with recovery options  
+\- Ensure rate limiting for Google Ads API calls  
+\- Use TypeScript generics appropriately for reusable components  
+\- Prefer composition over inheritance for component structure  
+\- Implement optimistic UI updates with proper fallbacks  
+\- Use React context for shared state when props would be cumbersome  
+\</coding\_patterns\>
+
+\<campaign\_clone\_operation\>  
+\- Ensure integration between campaign selection, naming convention, and match type conversion  
+\- Implement negative keyword creation for exact match keywords  
+\- Include comprehensive validation before operation execution  
+\- Add progress tracking for multi-step operations  
+\- Implement rollback capabilities for failed operations  
+\- Follow the user flow specified in Campaign Clone Operation User Flow.mermaid  
+\- Check alignment with requirements in PRD.md  
+\- Handle large campaign volumes efficiently  
+\</campaign\_clone\_operation\>
+
+\<api\_resilience\>  
+\- Implement request queuing with configurable concurrency  
+\- Add exponential backoff for retries on transient failures  
+\- Include token refresh logic for authentication  
+\- Create transaction-like semantics for complex operations  
+\- Store restore points for operations to enable rollback  
+\- Handle API rate limits according to Google Ads API guidelines  
+\- Reference API Resilience Implementation Guide.md for implementation details  
+\- Categorize and log all API errors appropriately  
+\</api\_resilience\>
+
+\<ui\_components\>  
+\- Use consistent UI patterns for all operations  
+\- Implement wizard interfaces for multi-step processes  
+\- Add proper loading states and error displays  
+\- Include progress visualization for long-running operations  
+\- Ensure all UI components follow the UI/UX Plans.md  
+\- Make components accessible according to WCAG standards  
+\- Implement responsive design for various screen sizes  
+\- Use Tailwind CSS utilities consistently for styling  
+\</ui\_components\>
+
+\<testing\_validation\>  
+\- Create unit tests for all core operations  
+\- Implement integration tests for complete workflows  
+\- Add validation checks before executing operations  
+\- Test with large campaign sets to verify performance  
+\- Ensure test coverage for error conditions  
+\- Verify rollback functionality works correctly  
+\- Test token refresh and authentication flows  
+\- Validate UI components across different browsers  
+\</testing\_validation\>
+
+\<project\_management\>  
+\- Create timestamped log entries for all significant development activities  
+\- Reference Error Handling & Progress Tracking Guide.md for successes or failures  
+\- Include executive summaries with each implementation containing:  
+  \* What was completed (specific features or components)  
+  \* What remains to be done (next steps and dependencies)  
+  \* What worked successfully (implementation wins)  
+  \* Where issues were encountered (challenges and resolutions)  
+\- Document API-related issues with specific error codes  
+\- Track progress against the implementation plan with completion percentages  
+\- Maintain a prioritized list of known issues (critical, high, medium, low)  
+\- Use consistent log formatting for easy filtering  
+\- Create separate logs for development activities versus runtime errors  
+\- Update Implementation Status Report.md when reaching significant milestones  
+\- Document all configuration changes and their impact  
+\- Test error handling thoroughly before marking features complete  
+\</project\_management\>
+
+\<file\_organization\>  
+\- Place API services in \`/src/lib/\` directory  
+\- Store UI components in \`/src/components/\` grouped by feature  
+\- Keep type definitions in dedicated files or a central \`/src/types/\` directory  
+\- Place utility functions in \`/src/utils/\`  
+\- Store hooks in \`/src/hooks/\`  
+\- Group related components in feature-specific folders  
+\- Follow the database schema in Database Schema Documentation.md  
+\- Name files and directories using kebab-case  
+\</file\_organization\>
+
+\<documentation\>  
+\- Document all complex functions with JSDoc comments  
+\- Include purpose, parameters, and return values in comments  
+\- Add implementation notes for non-obvious code  
+\- Document known limitations and edge cases  
+\- Reference related documentation when implementing features  
+\- Keep code and documentation synchronized  
+\- Follow the documentation structure in Project Documentation and Sequencing Guide.md  
+\- Update documentation when implementation details change  
+\</documentation\>  

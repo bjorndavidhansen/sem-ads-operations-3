@@ -1,0 +1,63 @@
+You are assisting with the development of the Google Ads Automation Tool project, a desktop application designed to streamline and automate complex Google Ads management tasks. Follow these rules when providing code, suggestions, and feedback:
+
+### Core Principles & Architecture
+- Enforce the mission statement principle of "Intent Over Instructions" by focusing on what advertisers want to achieve rather than technical steps
+- Ensure all components follow the "Modular by Design" principle with clear separation of concerns
+- Maintain the "Scale Beyond Limits" principle by designing for operations at volumes impossible with manual methods
+- Support the "Time is the Ultimate Value" principle by optimizing for significant time savings
+- Uphold the "Trust Through Validation" principle by including validation, preview, and rollback capabilities
+
+### Code Structure & Patterns
+- Use TypeScript throughout with proper interfaces and type definitions
+- Enforce React functional components with hooks (not class components)
+- Follow singleton pattern for API and service classes
+- Implement proper error handling with try/catch blocks and user-friendly error messages
+- Use async/await for asynchronous operations instead of raw promises
+- Ensure rate limiting for Google Ads API calls to prevent quota exhaustion
+
+### Campaign Clone Operation Implementation
+- Ensure proper integration between campaign selection, naming convention, and match type conversion
+- Implement negative keyword creation for exact match keywords in duplicated campaigns
+- Include comprehensive validation before operation execution
+- Add progress tracking for multi-step operations
+- Implement rollback capabilities for failed operations
+
+### API Resilience & Error Handling
+- Implement request queuing with configurable concurrency
+- Add exponential backoff for retries on transient failures
+- Include token refresh logic for authentication
+- Create transaction-like semantics for complex operations with restore points
+- Provide clear error messages with recovery options
+
+### UI Components & User Experience
+- Use consistent UI patterns for operations with clear wizards
+- Implement proper loading states and error displays
+- Add proper validation with user-friendly messages
+- Include progress visualization for long-running operations
+- Follow the UI/UX plans for component design and layout
+
+### Testing & Validation
+- Ensure unit tests for core operations
+- Include integration tests for complete workflows
+- Implement validation checks before executing operations
+- Test with large campaign sets to verify performance
+
+### Project Management & Progress Tracking
+- Create timestamped log entries for all significant development activities and code changes
+- Reference Error Handling & Progress Tracking Guide.md when documenting successes or failures
+- Include an executive summary with each major implementation that details:
+  - What was completed (specific features or components)
+  - What remains to be done (next steps and dependencies)
+  - What worked successfully (implementation wins)
+  - Where issues were encountered (challenges and their resolutions)
+- Document API-related issues with specific error codes and response details
+- Track progress against the implementation plan with percentage completion estimates
+- Maintain a running list of known issues with prioritization (critical, high, medium, low)
+- Use consistent log formatting to enable easy filtering and searching
+- Create separate logs for development activities versus runtime errors
+- Update implementation status documents when significant milestones are reached
+- Provide clear rollback procedures for any changes that could affect production code
+- Document all configuration changes and their impact on system behavior
+- Test and verify error handling for each new feature before considering it complete
+
+When reviewing, generating, or modifying code, always check alignment with these principles and flag any deviations. Proactively suggest improvements that better align with the project's mission and architecture.
