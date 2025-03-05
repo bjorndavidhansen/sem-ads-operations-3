@@ -8,6 +8,7 @@ import { ForgotPasswordPage } from './pages/auth/forgot-password';
 import { GoogleAdsAccountsPage } from './pages/google-ads/accounts';
 import { CampaignCopyPage } from './pages/campaigns/copy-modify';
 import { CampaignComparePage } from './pages/campaigns/compare';
+import CampaignCloneWizardPage from './pages/campaigns/clone-wizard';
 import { SharedBudgetsPage } from './pages/shared-budgets';
 import { TasksPage } from './pages/tasks';
 import { TaskTemplatesPage } from './pages/tasks/templates';
@@ -65,6 +66,16 @@ function App() {
                 <ProtectedRoute>
                   <AppContainer>
                     <CampaignComparePage />
+                  </AppContainer>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/campaigns/clone-wizard"
+              element={
+                <ProtectedRoute>
+                  <AppContainer>
+                    <CampaignCloneWizardPage />
                   </AppContainer>
                 </ProtectedRoute>
               }

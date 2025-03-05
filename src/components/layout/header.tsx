@@ -1,4 +1,4 @@
-import { Copy, Settings, LogOut, Building2, Layers, Clock, FileText, Calendar, BarChart2, BarChart as ChartBar, History } from 'lucide-react';
+import { Copy, Settings, LogOut, Building2, Layers, Clock, FileText, Calendar, BarChart2, BarChart as ChartBar, History, Wand2 } from 'lucide-react';
 import { Session } from '@supabase/supabase-js';
 import { Link } from 'react-router-dom';
 import { Button } from '../ui/button';
@@ -33,6 +33,12 @@ export function Header({ session }: HeaderProps) {
             <Button variant="outline" size="sm">
               <Layers className="mr-2 h-4 w-4" />
               Copy Campaigns
+            </Button>
+          </Link>
+          <Link to="/campaigns/clone-wizard">
+            <Button variant="outline" size="sm">
+              <Wand2 className="mr-2 h-4 w-4" />
+              Clone Wizard
             </Button>
           </Link>
           <Link to="/campaigns/compare">
